@@ -1,0 +1,51 @@
+body {
+	margin: 0 auto;
+	text-align: center;
+	width: 80vw;
+	height: 500px;
+}
+
+.main {
+	display: flex;
+	justify-content: space-around;
+}
+
+.player {
+	display: flex;
+	width: 30vw;
+	height: 30vw;
+	border-top: 1px solid;
+	border-right: 1px solid;
+}
+
+.player > div {
+	display: flex;
+	flex-direction: column;
+	width: 10%;
+	border-left: 1px solid;
+}
+
+.player > div > div {
+	height: 10%;
+	border-bottom: 1px solid;
+}
+
+.computer {
+	display: flex;
+	width: 30vw;
+	height: 30vw;
+	border-top: 1px solid;
+	border-right: 1px solid;
+}
+
+.computer > div {
+	display: flex;
+	flex-direction: column;
+	width: 10%;
+	border-left: 1px solid;
+}
+
+.computer > div > div {
+	height: 10%;
+	border-bottom: 1px solid;
+}
