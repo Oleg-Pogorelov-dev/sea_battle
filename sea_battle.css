@@ -12,6 +12,7 @@ body {
 
 .player {
 	display: flex;
+	flex-wrap: wrap;
 	width: 30vw;
 	height: 30vw;
 	border-top: 1px solid;
@@ -20,18 +21,16 @@ body {
 
 .player > div {
 	display: flex;
-	flex-direction: column;
-	width: 10%;
-	border-left: 1px solid;
-}
-
-.player > div > div {
 	height: 10%;
+	width: 10%;
+	box-sizing: border-box;
+	border-left: 1px solid;
 	border-bottom: 1px solid;
 }
 
 .computer {
 	display: flex;
+	flex-wrap: wrap;
 	width: 30vw;
 	height: 30vw;
 	border-top: 1px solid;
@@ -40,12 +39,17 @@ body {
 
 .computer > div {
 	display: flex;
-	flex-direction: column;
+	height: 10%;
 	width: 10%;
+	box-sizing: border-box;
 	border-left: 1px solid;
+	border-bottom: 1px solid;
 }
 
-.computer > div > div {
-	height: 10%;
-	border-bottom: 1px solid;
+.destroyed {
+	background-color: red;
+}
+
+.miss {
+	background-color: blue;
 }
