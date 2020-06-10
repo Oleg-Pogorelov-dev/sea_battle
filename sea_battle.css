@@ -46,6 +46,18 @@ body {
 	border-bottom: 1px solid;
 }
 
+.player_choose-place {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.player_navy {
+	background-color: black;
+}
+
+.crashed_ship {
+	background-color: orange;
+}
+
 .destroyed {
 	background-color: red;
 }
