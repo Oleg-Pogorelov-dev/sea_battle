@@ -54,6 +54,10 @@ body {
 	background-color: black;
 }
 
+.miss {
+	background-color: blue;
+}
+
 .crashed_ship {
 	background-color: orange;
 }
@@ -62,6 +66,3 @@ body {
 	background-color: red;
 }
 
-.miss {
-	background-color: blue;
-}

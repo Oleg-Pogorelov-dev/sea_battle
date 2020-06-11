@@ -1,6 +1,6 @@
 let number_cells = 100;
-let computer_navy = [];
-let player_navy = [];
+let location_computer_navy = [];
+let location_player_navy = [];
 let blank_cells = [
 	0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
 	10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -13,8 +13,16 @@ let blank_cells = [
 	80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
 ];
+let crashed_ships = [];
+let destroyed_ships = [];
 
+let computer_navy = [
+	[4], [3], [3], [2], [2], [2], [1], [1], [1], [1],
+]
 
+let player_navy = [
+	[4], [3], [3], [2], [2], [2], [1], [1], [1], [1],
+]
 
 const computer_field = document.querySelector('.computer');
 const player_field = document.querySelector('.player');
@@ -28,7 +36,27 @@ function turn() {
 	return Boolean(Math.round(Math.random()));
 }
 
-function randomPlaceForShips(arr) {
+function randomCrashX(shoot) {
+	if (turn() && String(shoot).indexOf('9', 1) == -1 && shoot != 9) {
+		return shoot + 1
+	} else if (shoot - 1 >= 0) {
+		return shoot - 1
+	} else {
+		return destroyed_ships[0]
+	}
+}
+
+function randomCrashY(shoot) {
+	if (turn() && shoot + 10 < 100) {
+		return shoot + 10
+	} else if (shoot - 10 >= 0) {
+		return shoot - 10
+	} else {
+		return destroyed_ships[0]
+	}
+}
+
+function randomLocations(arr) {
 	let battleship = Math.floor(Math.random() * 100);
 	let battleship_2;
 	let battleship_3;
@@ -43,6 +71,9 @@ function randomPlaceForShips(arr) {
 	  battleship_4 = battleship + 30;
 	} else {
 		while (
+			battleship == 9 ||
+			battleship == 8 ||
+			battleship == 7 ||
 			String(battleship).indexOf('9', 1) != -1 ||
 			String(battleship).indexOf('8', 1) != -1 ||
 			String(battleship).indexOf('7', 1) != -1 
@@ -98,6 +129,8 @@ function randomPlaceForShips(arr) {
 				arr.includes(cruiser - 7) ||
 				arr.includes(cruiser + 3) ||
 				arr.includes(cruiser + 13) ||
+				cruiser == 9 ||
+				cruiser == 8 ||
 				String(cruiser).indexOf('9', 1) != -1 ||
 				String(cruiser).indexOf('8', 1) != -1
 			) cruiser = Math.floor(Math.random() * 100);
@@ -143,6 +176,7 @@ function randomPlaceForShips(arr) {
 				arr.includes(destroyer - 8) ||
 				arr.includes(destroyer + 2) ||
 				arr.includes(destroyer + 12) ||
+				destroyer == 9 ||
 				String(destroyer).indexOf('9', 1) != -1
 			) destroyer = Math.floor(Math.random() * 100);
 			destroyer_2 = destroyer + 1;
@@ -184,17 +218,39 @@ function randomPlaceForShips(arr) {
 // player_field.onclick = (event) => {
 // 	let target = event.target;
 // 	if (target.parentElement.className != 'player') return;
-//   target.classList.add('player_navy');
+//   target.classList.add('location_player_navy');
 // };
-randomPlaceForShips(computer_navy);
-randomPlaceForShips(player_navy);
+randomLocations(location_computer_navy);
+randomLocations(location_player_navy);
 
 for (let i = 0; i < 100; i++) {
 	const number_cell = Number(player_field.children[i].className.slice(7))
-	if (player_navy.includes(number_cell)) {
+	if (location_player_navy.includes(number_cell)) {
 		player_field.children[i].classList.add('player_navy')
 	}
 }
+
+computer_navy[0].push(location_computer_navy.slice(0,4))
+computer_navy[1].push(location_computer_navy.slice(4,7))
+computer_navy[2].push(location_computer_navy.slice(7,10))
+computer_navy[3].push(location_computer_navy.slice(10,12))
+computer_navy[4].push(location_computer_navy.slice(12,14))
+computer_navy[5].push(location_computer_navy.slice(14,16))
+computer_navy[6].push(location_computer_navy.slice(16,17))
+computer_navy[7].push(location_computer_navy.slice(17,18))
+computer_navy[8].push(location_computer_navy.slice(18,19))
+computer_navy[9].push(location_computer_navy.slice(19,20))
+
+player_navy[0].push(location_player_navy.slice(0,4))
+player_navy[1].push(location_player_navy.slice(4,7))
+player_navy[2].push(location_player_navy.slice(7,10))
+player_navy[3].push(location_player_navy.slice(10,12))
+player_navy[4].push(location_player_navy.slice(12,14))
+player_navy[5].push(location_player_navy.slice(14,16))
+player_navy[6].push(location_player_navy.slice(16,17))
+player_navy[7].push(location_player_navy.slice(17,18))
+player_navy[8].push(location_player_navy.slice(18,19))
+player_navy[9].push(location_player_navy.slice(19,20))
 
 computer_field.onclick = (event) => {
 	let target = event.target;
@@ -206,28 +262,185 @@ computer_field.onclick = (event) => {
 						target.classList.contains('crashed_ship') || 
 						target.classList.contains('miss')) return;
 
-	if 	(computer_navy.includes(+target.classList[0].slice(9)) && 
-				(
-					computer_navy.includes(+target.classList[0].slice(9) + 1)  ||
-					computer_navy.includes(+target.classList[0].slice(9) - 1)  ||
-					computer_navy.includes(+target.classList[0].slice(9) - 10) ||
-					computer_navy.includes(+target.classList[0].slice(9) + 10)
-				)
-		 	) {
+	if (location_computer_navy.includes(+target.classList[0].slice(9))) {
     target.classList.add('crashed_ship');
-	} else if (computer_navy.includes(+target.classList[0].slice(9))) {
-		target.classList.add('destroyed');
+
+  	for (let ship of computer_navy) {
+  		if (ship[1].includes(+target.classList[0].slice(9))) {
+  			ship[0] = ship[0] - 1;
+  		}
+
+  		if (!ship[0]) {
+  			for (let deck of ship[1]) {
+  				destroyed_deck = document.querySelector(`.computer_${deck}`);
+  				destroyed_deck.classList.add('destroyed');
+
+  				if (String(deck).indexOf('9', 1) == -1 && deck != 9 && !ship[1].includes(deck + 1)) {
+  					document.querySelector(`.computer_${deck + 1}`).classList.add('miss');
+  				};
+
+  				if (!String(deck).includes('0') && !ship[1].includes(deck - 1)) {
+  					document.querySelector(`.computer_${deck - 1}`).classList.add('miss');
+  				};
+
+  				if (deck - 10 >= 0 && !ship[1].includes(deck - 10)) {
+  					document.querySelector(`.computer_${deck - 10}`).classList.add('miss');
+  				};
+
+  				if (deck + 10 < 100 && !ship[1].includes(deck + 10)) {
+  					document.querySelector(`.computer_${deck + 10}`).classList.add('miss');
+  				};
+
+  				if (String(deck - 9).indexOf('0', 1) == -1 && deck - 9 > 0) {
+  					document.querySelector(`.computer_${deck - 9}`).classList.add('miss');
+  				};
+
+  				if (deck + 11 < 100 && String(deck + 11).indexOf('0', 1) == -1){
+  					document.querySelector(`.computer_${deck + 11}`).classList.add('miss');
+  				};
+
+  				if (deck - 11 >= 0 && String(deck - 11).indexOf('9', 1) == -1){
+  					document.querySelector(`.computer_${deck - 11}`).classList.add('miss');
+  				};
+
+  				if (deck + 9 < 99 && deck + 9 != 9 && String(deck + 9).indexOf('9', 1) == -1){
+  					document.querySelector(`.computer_${deck + 9}`).classList.add('miss');
+  				};
+  			};
+  		};
+  		
+		};
+  	return;
 	} else {
 		target.classList.add('miss');
 	};
 
-	if (player_field.children[shoot].classList.contains('player_navy')){
-		player_field.children[shoot].classList.remove('player_navy');
-		player_field.children[shoot].classList.add('destroyed');
-	} else {
+	while (destroyed_ships.includes(shoot)) {
+			blank_cells.splice(chosen_cell, 1);
+			number_cells = number_cells - 1;
+			chosen_cell = Math.floor(Math.random() * number_cells);
+			shoot = blank_cells[chosen_cell];
+	}
+
+	while (player_field.children[shoot].classList.contains('player_navy')){
+		player_field.children[shoot].classList.add('crashed_ship');
+		crashed_ships.push(shoot);
+
+		for (let ship of player_navy) {
+  		if (ship[1].includes(shoot)) {
+  			ship[0] = ship[0] - 1;
+  		}
+
+  		if (!ship[0]) {
+  			for (let deck of ship[1]) {
+  				destroyed_deck = document.querySelector(`.player_${deck}`);
+  				destroyed_deck.classList.remove('crashed_ship');
+  				destroyed_deck.classList.add('destroyed');
+  				crashed_ships.splice(0, crashed_ships.length);
+  				console.log(crashed_ships)
+
+  				if (String(deck).indexOf('9', 1) == -1 && deck != 9 && !ship[1].includes(deck + 1)) {
+  					document.querySelector(`.player_${deck + 1}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck + 1)){
+  						destroyed_ships.push(deck + 1);
+  					}
+  				};
+
+  				if (!String(deck).includes('0') && !ship[1].includes(deck - 1)) {
+  					document.querySelector(`.player_${deck - 1}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck - 1)){
+  						destroyed_ships.push(deck - 1);
+  					}
+  				};
+
+  				if (deck - 10 >= 0 && !ship[1].includes(deck - 10)) {
+  					document.querySelector(`.player_${deck - 10}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck + 1)){
+  						destroyed_ships.push(deck - 10);
+  					}
+  				};
+
+  				if (deck + 10 < 100 && !ship[1].includes(deck + 10)) {
+  					document.querySelector(`.player_${deck + 10}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck + 10)){
+  						destroyed_ships.push(deck + 10);
+  					}
+  				};
+
+  				if (String(deck - 9).indexOf('0', 1) == -1 && deck - 9 > 0) {
+  					document.querySelector(`.player_${deck - 9}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck - 9)){
+  						destroyed_ships.push(deck - 9);
+  					}
+  				};
+
+  				if (deck + 11 < 100 && String(deck + 11).indexOf('0', 1) == -1){
+  					document.querySelector(`.player_${deck + 11}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck + 11)){
+  						destroyed_ships.push(deck + 11);
+  					}
+  				};
+
+  				if (deck - 11 >= 0 && String(deck - 11).indexOf('9', 1) == -1){
+  					document.querySelector(`.player_${deck - 11}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck - 11)){
+  						destroyed_ships.push(deck - 11);
+  					}
+  					
+  				};
+
+  				if (deck + 9 < 99 && deck + 9 != 9 && String(deck + 9).indexOf('9', 1) == -1){
+  					document.querySelector(`.player_${deck + 9}`).classList.add('miss');
+  					if (!destroyed_ships.includes(deck + 9)){
+  						destroyed_ships.push(deck + 9);
+  					}
+  				};
+  			};
+  		};
+		};
+
+		crashed_ships.sort();
+		destroyed_ships.push(shoot);
+		blank_cells.splice(chosen_cell, 1);
+		number_cells = number_cells - 1;
+		chosen_cell = Math.floor(Math.random() * number_cells);
+
+		do {
+			if (crashed_ships.length > 1 && crashed_ships[0] + 1 == crashed_ships[1]) {
+				let rand = Math.floor(Math.random() * crashed_ships.length)
+				shoot = randomCrashX(crashed_ships[rand])
+			} else if (crashed_ships.length > 1) {
+				let rand = Math.floor(Math.random() * crashed_ships.length)
+				shoot = randomCrashY(crashed_ships[rand])
+			} else if (crashed_ships) {
+				if (turn()) {
+					let rand = Math.floor(Math.random() * crashed_ships.length)
+					shoot = randomCrashX(crashed_ships[rand])
+				} else {
+					let rand = Math.floor(Math.random() * crashed_ships.length)
+					shoot = randomCrashY(crashed_ships[rand])
+				}
+			} else {
+				shoot = blank_cells[chosen_cell];
+			}
+		} while (destroyed_ships.includes(shoot));
+	}
+
+	if (!player_field.children[shoot].classList.contains('player_navy')){
 		player_field.children[shoot].classList.add('miss');
+		destroyed_ships.push(shoot);
 	};
 
 	blank_cells.splice(chosen_cell, 1);
 	number_cells = number_cells - 1;
+
+	if (player_field.getElementsByClassName('destroyed').length == 20){
+		alert('Компьютер победил!')
+		location.reload()
+	}
+
+	if (computer_field.getElementsByClassName('destroyed').length == 20){
+		alert('Игрок победил!')
+		location.reload()
+	}
 };
