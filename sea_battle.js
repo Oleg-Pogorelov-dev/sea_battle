@@ -72,19 +72,93 @@ for (let i = 0; i < 100; i++) {
     player_field.children[i].className = 'player_' + i
 };
 
-function addRandomShips(navy) {
+function checkOnedeck(arr, ship) {
+    if (
+        arr.includes(ship) ||
+        arr.includes(ship - 1) ||
+        arr.includes(ship + 1) ||
+        arr.includes(ship + 9) ||
+        arr.includes(ship - 9) ||
+        arr.includes(ship + 10) ||
+        arr.includes(ship - 10) ||
+        arr.includes(ship + 11) ||
+        arr.includes(ship - 11)
+    ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkTwodeck(arr, ship, bool) {
+    if (bool) {
+        if (
+            checkOnedeck(arr, ship) ||
+            arr.includes(ship + 19) ||
+            arr.includes(ship + 20) ||
+            arr.includes(ship + 21)
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        if (
+            checkOnedeck(arr, ship) ||
+            arr.includes(ship - 8) ||
+            arr.includes(ship + 2) ||
+            arr.includes(ship + 12) ||
+            ship == 9 ||
+            String(ship).indexOf('9', 1) != -1
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+function checkThreedeck(arr, ship, bool) {
+    if (bool) {
+        if (
+            checkTwodeck(arr, ship, bool) ||
+            arr.includes(ship + 29) ||
+            arr.includes(ship + 30) ||
+            arr.includes(ship + 31)
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        if (
+            checkTwodeck(arr, ship, bool) ||
+            arr.includes(ship - 7) ||
+            arr.includes(ship + 3) ||
+            arr.includes(ship + 13) ||
+            ship == 8 ||
+            String(ship).indexOf('8', 1) != -1
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+function addRandomShips(navy, location) {
     // добавляет корабли из массива location в объект со статусами короблей
     // при случайной расстановке
-    navy['fourdeck_ship_1']['decks'].push(location_player_navy.slice(0, 4))
-    navy['threedeck_ship_2']['decks'].push(location_player_navy.slice(4, 7))
-    navy['threedeck_ship_1']['decks'].push(location_player_navy.slice(7, 10))
-    navy['twodeck_ship_3']['decks'].push(location_player_navy.slice(10, 12))
-    navy['twodeck_ship_2']['decks'].push(location_player_navy.slice(12, 14))
-    navy['twodeck_ship_1']['decks'].push(location_player_navy.slice(14, 16))
-    navy['onedeck_ship_4']['decks'].push(location_player_navy.slice(16, 17))
-    navy['onedeck_ship_3']['decks'].push(location_player_navy.slice(17, 18))
-    navy['onedeck_ship_2']['decks'].push(location_player_navy.slice(18, 19))
-    navy['onedeck_ship_1']['decks'].push(location_player_navy.slice(19, 20))
+    navy['fourdeck_ship_1']['decks'].push(location.slice(0, 4));
+    navy['threedeck_ship_2']['decks'].push(location.slice(4, 7));
+    navy['threedeck_ship_1']['decks'].push(location.slice(7, 10));
+    navy['twodeck_ship_3']['decks'].push(location.slice(10, 12));
+    navy['twodeck_ship_2']['decks'].push(location.slice(12, 14));
+    navy['twodeck_ship_1']['decks'].push(location.slice(14, 16));
+    navy['onedeck_ship_4']['decks'].push(location.slice(16, 17));
+    navy['onedeck_ship_3']['decks'].push(location.slice(17, 18));
+    navy['onedeck_ship_2']['decks'].push(location.slice(18, 19));
+    navy['onedeck_ship_1']['decks'].push(location.slice(19, 20));
 }
 
 function checkPlace(target, ship, decks) {
@@ -182,7 +256,6 @@ function randomCrashX(shoot, arr) {
     } else if (shoot - 1 >= 0) {
         return shoot - 1
     } else {
-        console.log('arr', arr)
         return arr
     }
 }
@@ -195,7 +268,6 @@ function randomCrashY(shoot, arr) {
     } else if (shoot - 10 >= 0) {
         return shoot - 10
     } else {
-        console.log('arr', arr)
         return arr
     }
 }
@@ -238,46 +310,14 @@ function randomLocations(arr) {
         let cruiser_3;
         if (turn()) {
             while (
-                arr.includes(cruiser) ||
-                arr.includes(cruiser + 1) ||
-                arr.includes(cruiser - 1) ||
-                arr.includes(cruiser + 9) ||
-                arr.includes(cruiser - 9) ||
-                arr.includes(cruiser + 10) ||
-                arr.includes(cruiser - 10) ||
-                arr.includes(cruiser + 11) ||
-                arr.includes(cruiser - 11) ||
-                arr.includes(cruiser + 19) ||
-                arr.includes(cruiser + 20) ||
-                arr.includes(cruiser + 21) ||
-                arr.includes(cruiser + 29) ||
-                arr.includes(cruiser + 30) ||
-                arr.includes(cruiser + 31) ||
+                checkThreedeck(arr, cruiser, true) ||
                 cruiser + 20 > 99
             ) cruiser = Math.floor(Math.random() * 100);
             cruiser_2 = cruiser + 10;
             cruiser_3 = cruiser + 20;
         } else {
             while (
-                arr.includes(cruiser) ||
-                arr.includes(cruiser + 1) ||
-                arr.includes(cruiser - 1) ||
-                arr.includes(cruiser + 9) ||
-                arr.includes(cruiser - 9) ||
-                arr.includes(cruiser + 10) ||
-                arr.includes(cruiser - 10) ||
-                arr.includes(cruiser + 11) ||
-                arr.includes(cruiser - 11) ||
-                arr.includes(cruiser - 8) ||
-                arr.includes(cruiser + 2) ||
-                arr.includes(cruiser + 12) ||
-                arr.includes(cruiser - 7) ||
-                arr.includes(cruiser + 3) ||
-                arr.includes(cruiser + 13) ||
-                cruiser == 9 ||
-                cruiser == 8 ||
-                String(cruiser).indexOf('9', 1) != -1 ||
-                String(cruiser).indexOf('8', 1) != -1
+                checkThreedeck(arr, cruiser, false)
             ) cruiser = Math.floor(Math.random() * 100);
             cruiser_2 = cruiser + 1;
             cruiser_3 = cruiser + 2;
@@ -292,37 +332,13 @@ function randomLocations(arr) {
         let destroyer_2;
         if (turn()) {
             while (
-                arr.includes(destroyer) ||
-                arr.includes(destroyer + 1) ||
-                arr.includes(destroyer - 1) ||
-                arr.includes(destroyer + 9) ||
-                arr.includes(destroyer - 9) ||
-                arr.includes(destroyer + 10) ||
-                arr.includes(destroyer - 10) ||
-                arr.includes(destroyer + 11) ||
-                arr.includes(destroyer - 11) ||
-                arr.includes(destroyer + 19) ||
-                arr.includes(destroyer + 20) ||
-                arr.includes(destroyer + 21) ||
+                checkTwodeck(arr, destroyer, true) ||
                 destroyer + 10 > 99
             ) destroyer = Math.floor(Math.random() * 100);
             destroyer_2 = destroyer + 10;
         } else {
             while (
-                arr.includes(destroyer) ||
-                arr.includes(destroyer + 1) ||
-                arr.includes(destroyer - 1) ||
-                arr.includes(destroyer + 9) ||
-                arr.includes(destroyer - 9) ||
-                arr.includes(destroyer + 10) ||
-                arr.includes(destroyer - 10) ||
-                arr.includes(destroyer + 11) ||
-                arr.includes(destroyer - 11) ||
-                arr.includes(destroyer - 8) ||
-                arr.includes(destroyer + 2) ||
-                arr.includes(destroyer + 12) ||
-                destroyer == 9 ||
-                String(destroyer).indexOf('9', 1) != -1
+                checkTwodeck(arr, destroyer, false)
             ) destroyer = Math.floor(Math.random() * 100);
             destroyer_2 = destroyer + 1;
         }
@@ -332,17 +348,9 @@ function randomLocations(arr) {
 
     for (let i = 4; i > 0; i--) {
         let boat = Math.floor(Math.random() * 100);
-        while (
-            arr.includes(boat) ||
-            arr.includes(boat - 1) ||
-            arr.includes(boat + 1) ||
-            arr.includes(boat + 9) ||
-            arr.includes(boat - 9) ||
-            arr.includes(boat + 10) ||
-            arr.includes(boat - 10) ||
-            arr.includes(boat + 11) ||
-            arr.includes(boat - 11)
-        ) boat = Math.floor(Math.random() * 100);
+        while (checkOnedeck(arr, boat)) {
+            boat = Math.floor(Math.random() * 100);
+        }
         arr.push(boat)
     }
 };
@@ -391,7 +399,7 @@ random_button.onclick = (event) => {
         fourdeck_ship_1: { count: 4, decks: [] },
     }
 
-    addRandomShips(player_navy);
+    addRandomShips(player_navy, location_player_navy);
 
     for (let i = 0; i < 100; i++) {
         const number_cell = Number(player_field.children[i].className.slice(7));
@@ -690,7 +698,7 @@ document.querySelector('.fourdeck').onclick = (event) => {
 
 // производит случайную расстановку кораблей компьютера
 randomLocations(location_computer_navy);
-addRandomShips(computer_navy);
+addRandomShips(computer_navy, location_computer_navy);
 
 computer_field.onclick = (event) => {
     // при нажатии на поле компьютера происходит выстрел.
@@ -710,7 +718,6 @@ computer_field.onclick = (event) => {
     if (location_computer_navy.includes(+target.classList[0].slice(9))) {
         // если игрок попал, то добавляем класс crashed_ship к данной клетке.
         target.classList.add('crashed_ship');
-
         for (let ship in computer_navy) {
             // проверяем статус кораблей компьютера, после чего отнимаем из соответствующего
             // поля count единицу
@@ -724,7 +731,7 @@ computer_field.onclick = (event) => {
                 // с потопленным кораблем клеток.
                 // удаляет у клеток потопленного корабля класс crashed_ships и добавляет класс destroyer
                 // удаляет информацию о коробле из объекта свойств кораблей
-                for (let deck in computer_navy[ship]['decks'][0]) {
+                for (let deck of computer_navy[ship]['decks'][0]) {
                     destroyed_deck = document.querySelector(`.computer_${deck}`);
                     destroyed_deck.classList.add('destroyed');
 
@@ -804,7 +811,6 @@ computer_field.onclick = (event) => {
         chosen_cell = Math.floor(Math.random() * (blank_cells.length));
         shoot = blank_cells[chosen_cell];
     }
-    console.log('shoot', shoot)
 
     while (player_field.children[shoot].classList.contains('player_navy')) {
         // если компьютер попал, то добавляем класс crashed_ship к данной клетке.
@@ -813,19 +819,16 @@ computer_field.onclick = (event) => {
         computer_shoots.push(shoot);
 
         for (let ship in player_navy) {
-            console.log('ship@@', player_navy[ship]['decks'])
-            console.log('ship@shoot@', shoot)
             if (player_navy[ship]['decks'][0].includes(shoot)) {
                 player_navy[ship]['count'] = player_navy[ship]['count'] - 1;
             }
 
             if (!player_navy[ship]['count']) {
-                for (let deck in player_navy[ship]['decks'][0]) {
+                for (let deck of player_navy[ship]['decks'][0]) {
                     destroyed_deck = document.querySelector(`.player_${deck}`);
                     destroyed_deck.classList.remove('crashed_ship');
                     destroyed_deck.classList.add('destroyed');
                     crashed_ships.splice(0, crashed_ships.length);
-                    console.log(crashed_ships)
 
                     if (String(deck).indexOf('9', 1) == -1 && deck != 9 && !player_navy[ship]['decks'][0].includes(deck + 1)) {
                         document.querySelector(`.player_${deck + 1}`).classList.add('miss');
@@ -896,12 +899,6 @@ computer_field.onclick = (event) => {
         blank_cells.splice(chosen_cell, 1);
         chosen_cell = Math.floor(Math.random() * (blank_cells.length));
 
-        console.log('blank_cells', blank_cells)
-        console.log('shoot', shoot)
-        console.log('chosen_cell', chosen_cell)
-        console.log('crashed_ships', crashed_ships)
-        console.log('computer_shoots', computer_shoots)
-
         do {
             if (crashed_ships.length > 1 && crashed_ships[0] + 1 == crashed_ships[1]) {
                 let rand = Math.floor(Math.random() * crashed_ships.length)
@@ -924,8 +921,6 @@ computer_field.onclick = (event) => {
             } else {
                 chosen_cell = Math.floor(Math.random() * (blank_cells.length));
                 shoot = blank_cells[chosen_cell];
-                console.log('fff', chosen_cell)
-                console.log('blank_cells', blank_cells)
             }
         } while (computer_shoots.includes(shoot));
     }
