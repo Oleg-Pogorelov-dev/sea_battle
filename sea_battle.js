@@ -1,10 +1,14 @@
+//начальное количество кораблей, нужно для ручной расстановки
 let onedeck_radio = 4;
 let twodeck_radio = 3;
 let threedeck_radio = 2;
 let fourdeck_radio = 1;
-
+//если 'true', то можно начинать игру
+let start = false;
+//массивы с номерами местоположения кораблей
 let location_computer_navy = [];
 let location_player_navy = [];
+// массив с клестками, по которым компьютер еще не производил выстрелов
 let blank_cells = [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -17,23 +21,14 @@ let blank_cells = [
     80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
     90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
 ];
+// массив с подбитыми палубами коробля
 let crashed_ships = [];
-let destroyed_ships = [];
+// массив с клетками, по которым стрелял компьютер
+let computer_shoots = [];
+// ориентация кораблей при ручной расстановке(по горизонтали, если true, иначе по вертикали)
 let horizontal = false;
-let computer_navy = [
-    [4],
-    [3],
-    [3],
-    [2],
-    [2],
-    [2],
-    [1],
-    [1],
-    [1],
-    [1],
-]
-
-let player_navy_2 = {
+// информация о флоте на карте
+let computer_navy = {
     onedeck_ship_1: { count: 1, decks: [] },
     onedeck_ship_2: { count: 1, decks: [] },
     onedeck_ship_3: { count: 1, decks: [] },
@@ -45,32 +40,58 @@ let player_navy_2 = {
     threedeck_ship_2: { count: 3, decks: [] },
     fourdeck_ship_1: { count: 4, decks: [] },
 }
-
-let player_navy = [
-    [4],
-    [3],
-    [3],
-    [2],
-    [2],
-    [2],
-    [1],
-    [1],
-    [1],
-    [1],
-]
+let player_navy = {
+    onedeck_ship_1: { count: 1, decks: [] },
+    onedeck_ship_2: { count: 1, decks: [] },
+    onedeck_ship_3: { count: 1, decks: [] },
+    onedeck_ship_4: { count: 1, decks: [] },
+    twodeck_ship_1: { count: 2, decks: [] },
+    twodeck_ship_2: { count: 2, decks: [] },
+    twodeck_ship_3: { count: 2, decks: [] },
+    threedeck_ship_1: { count: 3, decks: [] },
+    threedeck_ship_2: { count: 3, decks: [] },
+    fourdeck_ship_1: { count: 4, decks: [] },
+};
 
 const computer_field = document.querySelector('.computer');
 const player_field = document.querySelector('.player');
 const random_button = document.querySelector('.random');
 const handle_button = document.querySelector('.handle');
+const start_button = document.querySelector('.start');
 const choose_ships = document.querySelector('.ships');
+
+for (let i = 0; i < 100; i++) {
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    player_field.appendChild(a);
+    computer_field.appendChild(b);
+};
 
 for (let i = 0; i < 100; i++) {
     computer_field.children[i].className = 'computer_' + i
     player_field.children[i].className = 'player_' + i
+};
+
+function addRandomShips(navy) {
+    // добавляет корабли из массива location в объект со статусами короблей
+    // при случайной расстановке
+    navy['fourdeck_ship_1']['decks'].push(location_player_navy.slice(0, 4))
+    navy['threedeck_ship_2']['decks'].push(location_player_navy.slice(4, 7))
+    navy['threedeck_ship_1']['decks'].push(location_player_navy.slice(7, 10))
+    navy['twodeck_ship_3']['decks'].push(location_player_navy.slice(10, 12))
+    navy['twodeck_ship_2']['decks'].push(location_player_navy.slice(12, 14))
+    navy['twodeck_ship_1']['decks'].push(location_player_navy.slice(14, 16))
+    navy['onedeck_ship_4']['decks'].push(location_player_navy.slice(16, 17))
+    navy['onedeck_ship_3']['decks'].push(location_player_navy.slice(17, 18))
+    navy['onedeck_ship_2']['decks'].push(location_player_navy.slice(18, 19))
+    navy['onedeck_ship_1']['decks'].push(location_player_navy.slice(19, 20))
 }
 
 function checkPlace(target, ship, decks) {
+    // функция проверяет возможность расстановки коробля на поле.
+    // если все условия соблюдены, то устанавливает коробль по заданным параметрам.
+    // после чего отнимает единицу из соответствующей переменной 
+    // с кол-вом свободных для расстановки кораблей
     let num = +target.className.slice(7, 9);
     let checked_decks = 0;
     let cells = [];
@@ -119,17 +140,26 @@ function checkPlace(target, ship, decks) {
 };
 
 function addShip(target, name, num_radio, decks) {
+    // добавляет корабль с помощью функции checkPlace, но перед этим
+    // проверяет доступное колличество кораблей
+    // также проверяет, если все коробли расставленны, то делает видимой
+    // кнопку старт
     if (!num_radio) {
         document.querySelector(`.${name}`).checked = false;
         document.querySelector(`.${name}`).parentElement.hidden = true;
     };
 
     if (document.querySelector(`.${name}`).checked) {
-        checkPlace(target, player_navy_2[`${name}_ship_${num_radio}`], decks);
+        checkPlace(target, player_navy[`${name}_ship_${num_radio}`], decks);
     };
+
+    if (location_player_navy.length == 20) {
+        document.querySelector('.start').hidden = false;
+    }
 }
 
 function removeClassesChoosenShips() {
+    // функция для удаления класса player_choose-place у клеток
     let ships = document.querySelectorAll('.player_choose-place');
     ships.forEach(ship => {
         ship.classList.remove('player_choose-place');
@@ -137,10 +167,16 @@ function removeClassesChoosenShips() {
 }
 
 function turn() {
+    // функция для ориентации коробля по горизонтали или по вертикали
+    // при случайной расстановке.
+    // так же используется компьютером для определения следущего
+    // выстрела при поподании по короблю игрока
     return Boolean(Math.round(Math.random()));
 }
 
 function randomCrashX(shoot, arr) {
+    // определяет выстрел компьютера в соседнюю клетку
+    // по горизонтали
     if (turn() && String(shoot).indexOf('9', 1) == -1 && shoot != 9) {
         return shoot + 1
     } else if (shoot - 1 >= 0) {
@@ -152,6 +188,8 @@ function randomCrashX(shoot, arr) {
 }
 
 function randomCrashY(shoot, arr) {
+    // определяет выстрел компьютера в соседнюю клетку
+    // по вертикали
     if (turn() && shoot + 10 < 100) {
         return shoot + 10
     } else if (shoot - 10 >= 0) {
@@ -163,6 +201,7 @@ function randomCrashY(shoot, arr) {
 }
 
 function randomLocations(arr) {
+    // функция для случайного распределения короблей
     let battleship = Math.floor(Math.random() * 100);
     let battleship_2;
     let battleship_3;
@@ -309,6 +348,7 @@ function randomLocations(arr) {
 };
 
 document.addEventListener('keydown', () => {
+    // меняет ориентацию при ручной расстановке кораблей
     removeClassesChoosenShips();
     if (event.ctrlKey) {
         if (horizontal) {
@@ -319,7 +359,15 @@ document.addEventListener('keydown', () => {
     };
 });
 
+start_button.onclick = (event) => {
+    start = true;
+    document.querySelector('.setting').hidden = true;
+}
+
 random_button.onclick = (event) => {
+    // при нажатии кнопки 'случайная' происходит случайная расстановка кораблей.
+    // перед этим прячет форму выбора кораблей и удаляет информацию о их рассположении
+    // и состоянии
     choose_ships.hidden = true;
     location_player_navy.splice(0);
     randomLocations(location_player_navy);
@@ -330,7 +378,7 @@ random_button.onclick = (event) => {
         };
     };
 
-    player_navy_2 = {
+    player_navy = {
         onedeck_ship_1: { count: 1, decks: [] },
         onedeck_ship_2: { count: 1, decks: [] },
         onedeck_ship_3: { count: 1, decks: [] },
@@ -343,30 +391,35 @@ random_button.onclick = (event) => {
         fourdeck_ship_1: { count: 4, decks: [] },
     }
 
-    player_navy_2['fourdeck_ship_1']['decks'].push(location_player_navy.slice(0, 4))
-    player_navy_2['threedeck_ship_2']['decks'].push(location_player_navy.slice(4, 7))
-    player_navy_2['threedeck_ship_1']['decks'].push(location_player_navy.slice(7, 10))
-    player_navy_2['twodeck_ship_3']['decks'].push(location_player_navy.slice(10, 12))
-    player_navy_2['twodeck_ship_2']['decks'].push(location_player_navy.slice(12, 14))
-    player_navy_2['twodeck_ship_1']['decks'].push(location_player_navy.slice(14, 16))
-    player_navy_2['onedeck_ship_4']['decks'].push(location_player_navy.slice(16, 17))
-    player_navy_2['onedeck_ship_3']['decks'].push(location_player_navy.slice(17, 18))
-    player_navy_2['onedeck_ship_2']['decks'].push(location_player_navy.slice(18, 19))
-    player_navy_2['onedeck_ship_1']['decks'].push(location_player_navy.slice(19, 20))
-    console.log(player_navy_2)
+    addRandomShips(player_navy);
+
     for (let i = 0; i < 100; i++) {
         const number_cell = Number(player_field.children[i].className.slice(7));
         if (location_player_navy.includes(number_cell)) {
             player_field.children[i].classList.add('player_navy');
         };
     };
+
+    if (location_player_navy.length == 20) {
+        document.querySelector('.start').hidden = false;
+    }
 };
 
 handle_button.onclick = (event) => {
+    // при нажатии на кнопку 'ручная' показывает форму с выбором кораблей.
+    // стирает информацию о текущем положении и состоянии кораблей.
+    // обновляет колличество доступных кораблей
+    // делает доступным добавление кораблей в ручную.
+    if (start) return;
     choose_ships.hidden = false;
     location_player_navy.splice(0);
 
-    player_navy_2 = {
+    onedeck_radio = 4;
+    twodeck_radio = 3;
+    threedeck_radio = 2;
+    fourdeck_radio = 1;
+
+    player_navy = {
         onedeck_ship_1: { count: 1, decks: [] },
         onedeck_ship_2: { count: 1, decks: [] },
         onedeck_ship_3: { count: 1, decks: [] },
@@ -387,6 +440,8 @@ handle_button.onclick = (event) => {
 }
 
 document.querySelector('.onedeck').onclick = (event) => {
+    // при наведении мышки на поле игрока, подсвечивает область добавления однопалубного коробля
+    // делает доступным добавление однопалубного корабля
     player_field.onmouseover = (event) => {
         let target = event.target;
         if (target.parentElement.className != 'player') return;
@@ -405,6 +460,8 @@ document.querySelector('.onedeck').onclick = (event) => {
 }
 
 document.querySelector('.twodeck').onclick = (event) => {
+    // при наведении мышки на поле игрока, подсвечивает область добавления двухпалубного коробля
+    // делает доступным добавление двухпалубного корабля
     player_field.onmouseover = (event) => {
         let target = event.target;
         if (horizontal) {
@@ -464,6 +521,8 @@ document.querySelector('.twodeck').onclick = (event) => {
 }
 
 document.querySelector('.threedeck').onclick = (event) => {
+    // при наведении мышки на поле игрока, подсвечивает область добавления трехпалубного коробля
+    // делает доступным добавление трехпалубного корабля
     player_field.onmouseover = (event) => {
         let target = event.target;
         if (horizontal) {
@@ -539,6 +598,8 @@ document.querySelector('.threedeck').onclick = (event) => {
 };
 
 document.querySelector('.fourdeck').onclick = (event) => {
+    // при наведении мышки на поле игрока, подсвечивает область добавления четырехпалубного коробля
+    // делает доступным добавление четырехпалубного корабля
     player_field.onmouseover = (event) => {
         let target = event.target;
         if (horizontal) {
@@ -627,20 +688,16 @@ document.querySelector('.fourdeck').onclick = (event) => {
     };
 }
 
+// производит случайную расстановку кораблей компьютера
 randomLocations(location_computer_navy);
-
-computer_navy[0].push(location_computer_navy.slice(0, 4))
-computer_navy[1].push(location_computer_navy.slice(4, 7))
-computer_navy[2].push(location_computer_navy.slice(7, 10))
-computer_navy[3].push(location_computer_navy.slice(10, 12))
-computer_navy[4].push(location_computer_navy.slice(12, 14))
-computer_navy[5].push(location_computer_navy.slice(14, 16))
-computer_navy[6].push(location_computer_navy.slice(16, 17))
-computer_navy[7].push(location_computer_navy.slice(17, 18))
-computer_navy[8].push(location_computer_navy.slice(18, 19))
-computer_navy[9].push(location_computer_navy.slice(19, 20))
+addRandomShips(computer_navy);
 
 computer_field.onclick = (event) => {
+    // при нажатии на поле компьютера происходит выстрел.
+    // проверяет, если старт true, то делает проверку выстрела
+    // при попадании по компьютеру выходит из функции.
+    // при промахе, стреляет компьютер
+    if (!start) return;
     let target = event.target;
     let chosen_cell = Math.floor(Math.random() * (blank_cells.length));
     let shoot = blank_cells[chosen_cell];
@@ -651,15 +708,23 @@ computer_field.onclick = (event) => {
         target.classList.contains('miss')) return;
 
     if (location_computer_navy.includes(+target.classList[0].slice(9))) {
+        // если игрок попал, то добавляем класс crashed_ship к данной клетке.
         target.classList.add('crashed_ship');
 
-        for (let ship of computer_navy) {
-            if (ship[1].includes(+target.classList[0].slice(9))) {
-                ship[0] = ship[0] - 1;
+        for (let ship in computer_navy) {
+            // проверяем статус кораблей компьютера, после чего отнимаем из соответствующего
+            // поля count единицу
+            if (computer_navy[ship]['decks'][0].includes(+target.classList[0].slice(9))) {
+                computer_navy[ship]['count'] = computer_navy[ship]['count'] - 1;
             }
 
-            if (!ship[0]) {
-                for (let deck of ship[1]) {
+            if (!computer_navy[ship]['count']) {
+                // если поле count у соответствующего коробля равно нулю,
+                // то делает проверки на возможность добавления класса miss для соседних
+                // с потопленным кораблем клеток.
+                // удаляет у клеток потопленного корабля класс crashed_ships и добавляет класс destroyer
+                // удаляет информацию о коробле из объекта свойств кораблей
+                for (let deck in computer_navy[ship]['decks'][0]) {
                     destroyed_deck = document.querySelector(`.computer_${deck}`);
                     destroyed_deck.classList.add('destroyed');
 
@@ -695,7 +760,7 @@ computer_field.onclick = (event) => {
                         document.querySelector(`.computer_${deck + 9}`).classList.add('miss');
                     };
                 };
-                computer_navy.splice(computer_navy.indexOf(ship, 0), 1);
+                delete computer_navy[ship]
             };
 
         };
@@ -705,32 +770,36 @@ computer_field.onclick = (event) => {
     };
 
     if (crashed_ships.length) {
+        // перед выстрелом компьютер проверяет наличие раненных кораблей.
+        // если такие имеются, то стреляет в соседнюю с ним клетку
         do {
             if (crashed_ships.length > 1 && crashed_ships[0] + 1 == crashed_ships[1]) {
                 let rand = Math.floor(Math.random() * crashed_ships.length)
-                shoot = randomCrashX(crashed_ships[rand], destroyed_ships[0])
+                shoot = randomCrashX(crashed_ships[rand], computer_shoots[0])
                 chosen_cell = blank_cells.indexOf(shoot)
             } else if (crashed_ships.length > 1) {
                 let rand = Math.floor(Math.random() * crashed_ships.length)
-                shoot = randomCrashY(crashed_ships[rand], destroyed_ships[0])
+                shoot = randomCrashY(crashed_ships[rand], computer_shoots[0])
                 chosen_cell = blank_cells.indexOf(shoot)
             } else if (crashed_ships) {
                 if (turn()) {
                     let rand = Math.floor(Math.random() * crashed_ships.length)
-                    shoot = randomCrashX(crashed_ships[rand], destroyed_ships[0])
+                    shoot = randomCrashX(crashed_ships[rand], computer_shoots[0])
                     chosen_cell = blank_cells.indexOf(shoot)
                 } else {
                     let rand = Math.floor(Math.random() * crashed_ships.length)
-                    shoot = randomCrashY(crashed_ships[rand], destroyed_ships[0])
+                    shoot = randomCrashY(crashed_ships[rand], computer_shoots[0])
                     chosen_cell = blank_cells.indexOf(shoot)
                 }
             } else {
                 shoot = blank_cells[chosen_cell];
             }
-        } while (destroyed_ships.includes(shoot));
+        } while (computer_shoots.includes(shoot));
     }
 
-    while (destroyed_ships.includes(shoot)) {
+    while (computer_shoots.includes(shoot)) {
+        // если выстрел компьютера совпадает с уже проведенными выстрелами,
+        // то меняет номер выстрела
         blank_cells.splice(chosen_cell, 1);
         chosen_cell = Math.floor(Math.random() * (blank_cells.length));
         shoot = blank_cells[chosen_cell];
@@ -738,81 +807,84 @@ computer_field.onclick = (event) => {
     console.log('shoot', shoot)
 
     while (player_field.children[shoot].classList.contains('player_navy')) {
+        // если компьютер попал, то добавляем класс crashed_ship к данной клетке.
         player_field.children[shoot].classList.add('crashed_ship');
         crashed_ships.push(shoot);
-        destroyed_ships.push(shoot);
+        computer_shoots.push(shoot);
 
-        for (let ship of player_navy) {
-            if (ship[1].includes(shoot)) {
-                ship[0] = ship[0] - 1;
+        for (let ship in player_navy) {
+            console.log('ship@@', player_navy[ship]['decks'])
+            console.log('ship@shoot@', shoot)
+            if (player_navy[ship]['decks'][0].includes(shoot)) {
+                player_navy[ship]['count'] = player_navy[ship]['count'] - 1;
             }
 
-            if (!ship[0]) {
-                for (let deck of ship[1]) {
+            if (!player_navy[ship]['count']) {
+                for (let deck in player_navy[ship]['decks'][0]) {
                     destroyed_deck = document.querySelector(`.player_${deck}`);
                     destroyed_deck.classList.remove('crashed_ship');
                     destroyed_deck.classList.add('destroyed');
                     crashed_ships.splice(0, crashed_ships.length);
                     console.log(crashed_ships)
 
-                    if (String(deck).indexOf('9', 1) == -1 && deck != 9 && !ship[1].includes(deck + 1)) {
+                    if (String(deck).indexOf('9', 1) == -1 && deck != 9 && !player_navy[ship]['decks'][0].includes(deck + 1)) {
                         document.querySelector(`.player_${deck + 1}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck + 1)) {
-                            destroyed_ships.push(deck + 1);
+                        if (!computer_shoots.includes(deck + 1)) {
+                            computer_shoots.push(deck + 1);
                         }
                     };
 
-                    if (!String(deck).includes('0') && !ship[1].includes(deck - 1)) {
+                    if (!String(deck).includes('0') && !player_navy[ship]['decks'][0].includes(deck - 1)) {
                         document.querySelector(`.player_${deck - 1}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck - 1)) {
-                            destroyed_ships.push(deck - 1);
+                        if (!computer_shoots.includes(deck - 1)) {
+                            computer_shoots.push(deck - 1);
                         }
                     };
 
-                    if (deck - 10 >= 0 && !ship[1].includes(deck - 10)) {
+                    if (deck - 10 >= 0 && !player_navy[ship]['decks'][0].includes(deck - 10)) {
                         document.querySelector(`.player_${deck - 10}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck + 1)) {
-                            destroyed_ships.push(deck - 10);
+                        if (!computer_shoots.includes(deck + 1)) {
+                            computer_shoots.push(deck - 10);
                         }
                     };
 
-                    if (deck + 10 < 100 && !ship[1].includes(deck + 10)) {
+                    if (deck + 10 < 100 && !player_navy[ship]['decks'][0].includes(deck + 10)) {
                         document.querySelector(`.player_${deck + 10}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck + 10)) {
-                            destroyed_ships.push(deck + 10);
+                        if (!computer_shoots.includes(deck + 10)) {
+                            computer_shoots.push(deck + 10);
                         }
                     };
 
                     if (String(deck - 9).indexOf('0', 1) == -1 && deck - 9 > 0) {
                         document.querySelector(`.player_${deck - 9}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck - 9)) {
-                            destroyed_ships.push(deck - 9);
+                        if (!computer_shoots.includes(deck - 9)) {
+                            computer_shoots.push(deck - 9);
                         }
                     };
 
                     if (deck + 11 < 100 && String(deck + 11).indexOf('0', 1) == -1) {
                         document.querySelector(`.player_${deck + 11}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck + 11)) {
-                            destroyed_ships.push(deck + 11);
+                        if (!computer_shoots.includes(deck + 11)) {
+                            computer_shoots.push(deck + 11);
                         }
                     };
 
                     if (deck - 11 >= 0 && String(deck - 11).indexOf('9', 1) == -1) {
                         document.querySelector(`.player_${deck - 11}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck - 11)) {
-                            destroyed_ships.push(deck - 11);
+                        if (!computer_shoots.includes(deck - 11)) {
+                            computer_shoots.push(deck - 11);
                         }
 
                     };
 
                     if (deck + 9 < 99 && deck + 9 != 9 && String(deck + 9).indexOf('9', 1) == -1) {
                         document.querySelector(`.player_${deck + 9}`).classList.add('miss');
-                        if (!destroyed_ships.includes(deck + 9)) {
-                            destroyed_ships.push(deck + 9);
+                        if (!computer_shoots.includes(deck + 9)) {
+                            computer_shoots.push(deck + 9);
                         }
                     };
                 };
-                player_navy.splice(player_navy.indexOf(ship, 0), 1);
+                delete player_navy[ship];
             };
         };
 
@@ -828,25 +900,25 @@ computer_field.onclick = (event) => {
         console.log('shoot', shoot)
         console.log('chosen_cell', chosen_cell)
         console.log('crashed_ships', crashed_ships)
-        console.log('destroyed_ships', destroyed_ships)
+        console.log('computer_shoots', computer_shoots)
 
         do {
             if (crashed_ships.length > 1 && crashed_ships[0] + 1 == crashed_ships[1]) {
                 let rand = Math.floor(Math.random() * crashed_ships.length)
-                shoot = randomCrashX(crashed_ships[rand], destroyed_ships[0])
+                shoot = randomCrashX(crashed_ships[rand], computer_shoots[0])
                 chosen_cell = blank_cells.indexOf(shoot)
             } else if (crashed_ships.length > 1) {
                 let rand = Math.floor(Math.random() * crashed_ships.length)
-                shoot = randomCrashY(crashed_ships[rand], destroyed_ships[0])
+                shoot = randomCrashY(crashed_ships[rand], computer_shoots[0])
                 chosen_cell = blank_cells.indexOf(shoot)
             } else if (crashed_ships.length) {
                 if (turn()) {
                     let rand = Math.floor(Math.random() * crashed_ships.length)
-                    shoot = randomCrashX(crashed_ships[rand], destroyed_ships[0])
+                    shoot = randomCrashX(crashed_ships[rand], computer_shoots[0])
                     chosen_cell = blank_cells.indexOf(shoot)
                 } else {
                     let rand = Math.floor(Math.random() * crashed_ships.length)
-                    shoot = randomCrashY(crashed_ships[rand], destroyed_ships[0])
+                    shoot = randomCrashY(crashed_ships[rand], computer_shoots[0])
                     chosen_cell = blank_cells.indexOf(shoot)
                 }
             } else {
@@ -855,26 +927,24 @@ computer_field.onclick = (event) => {
                 console.log('fff', chosen_cell)
                 console.log('blank_cells', blank_cells)
             }
-        } while (destroyed_ships.includes(shoot));
+        } while (computer_shoots.includes(shoot));
     }
 
     if (!player_field.children[shoot].classList.contains('player_navy')) {
         player_field.children[shoot].classList.add('miss');
-        destroyed_ships.push(shoot);
+        computer_shoots.push(shoot);
         blank_cells.splice(chosen_cell, 1);
     };
-
-    setTimeout(() => {
-        if (!player_navy.length) {
-            alert('Компьютер победил!')
-            location.reload()
-        }
-    }, 0);
-
-    setTimeout(() => {
-        if (!computer_navy.length) {
-            alert('Игрок победил!')
-            location.reload()
-        }
-    }, 0);
 };
+
+computer_field.onmouseover = (event) => {
+    if (player_field.querySelectorAll('.destroyed').length == 20) {
+        alert('Компьютер победил!')
+        location.reload()
+    }
+
+    if (computer_field.querySelectorAll('.destroyed').length == 20) {
+        alert('Игрок победил!')
+        location.reload()
+    }
+}
