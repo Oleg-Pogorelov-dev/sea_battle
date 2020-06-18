@@ -72,9 +72,8 @@ for (let i = 0; i < 100; i++) {
     player_field.children[i].className = 'player_' + i
 };
 
-function checkOnedeck(arr, ship) {
-    if (
-        arr.includes(ship) ||
+const checkOnedeck = (arr, ship) => {
+    return (arr.includes(ship) ||
         arr.includes(ship - 1) ||
         arr.includes(ship + 1) ||
         arr.includes(ship + 9) ||
@@ -82,67 +81,38 @@ function checkOnedeck(arr, ship) {
         arr.includes(ship + 10) ||
         arr.includes(ship - 10) ||
         arr.includes(ship + 11) ||
-        arr.includes(ship - 11)
-    ) {
-        return true;
-    } else {
-        return false;
-    }
+        arr.includes(ship - 11))
 }
 
-function checkTwodeck(arr, ship, bool) {
+const checkTwodeck = (arr, ship, bool) => {
     if (bool) {
-        if (
-            checkOnedeck(arr, ship) ||
+        return (checkOnedeck(arr, ship) ||
             arr.includes(ship + 19) ||
             arr.includes(ship + 20) ||
-            arr.includes(ship + 21)
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+            arr.includes(ship + 21))
     } else {
-        if (
-            checkOnedeck(arr, ship) ||
+        return (checkOnedeck(arr, ship) ||
             arr.includes(ship - 8) ||
             arr.includes(ship + 2) ||
             arr.includes(ship + 12) ||
             ship == 9 ||
-            String(ship).indexOf('9', 1) != -1
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+            String(ship).indexOf('9', 1) != -1)
     }
 }
 
-function checkThreedeck(arr, ship, bool) {
+const checkThreedeck = (arr, ship, bool) => {
     if (bool) {
-        if (
-            checkTwodeck(arr, ship, bool) ||
+        return (checkTwodeck(arr, ship, bool) ||
             arr.includes(ship + 29) ||
             arr.includes(ship + 30) ||
-            arr.includes(ship + 31)
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+            arr.includes(ship + 31))
     } else {
-        if (
-            checkTwodeck(arr, ship, bool) ||
+        return (checkTwodeck(arr, ship, bool) ||
             arr.includes(ship - 7) ||
             arr.includes(ship + 3) ||
             arr.includes(ship + 13) ||
             ship == 8 ||
-            String(ship).indexOf('8', 1) != -1
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+            String(ship).indexOf('8', 1) != -1)
     }
 }
 
@@ -180,7 +150,7 @@ function checkPlace(target, ship, decks) {
             (!location_player_navy.includes(num - 11) || String(num).includes('0')) &&
             (!location_player_navy.includes(num + 11) || String(num).slice(1) == '9' || num == 9)) {
 
-            checked_decks = ++checked_decks;
+            checked_decks++;
             cells.push(num);
         } else {
             break;
@@ -201,14 +171,15 @@ function checkPlace(target, ship, decks) {
             location_player_navy.push(cell);
         }
 
-        if (decks == 4) {
-            fourdeck_radio = fourdeck_radio - 1;
-        } else if (decks == 3) {
-            threedeck_radio = threedeck_radio - 1;
-        } else if (decks == 2) {
-            twodeck_radio = twodeck_radio - 1;
-        } else if (decks == 1) {
-            onedeck_radio = onedeck_radio - 1;
+        switch (decks) {
+            case (4):
+                fourdeck_radio = fourdeck_radio - 1;
+            case (3):
+                threedeck_radio = threedeck_radio - 1;
+            case (2):
+                twodeck_radio = twodeck_radio - 1;
+            case (1):
+                onedeck_radio = onedeck_radio - 1;
         };
     }
 };
