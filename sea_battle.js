@@ -165,7 +165,7 @@ function checkPlace(target, ship, decks) {
     };
 
     if (checked_decks == decks) {
-        ship['decks'] = cells;
+        ship['decks'].push(cells);
         for (let cell of cells) {
             document.querySelector(`.player_${cell}`).classList.add('player_navy');
             location_player_navy.push(cell);
